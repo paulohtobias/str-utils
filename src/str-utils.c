@@ -67,9 +67,11 @@ char *str_replace(const char *orig, const char *rep, const char *with){
 }
 
 int __strcmpn_atoi(const char *str, int *index){
-	while(isdigit(str[*index])){
-		(*index)++;
+	int i = 0;
+	while(isdigit(str[i])){
+		i++;
 	}
+	(*index) += i - 1;
 	
 	return atoi(str);
 }
@@ -83,33 +85,21 @@ int strcmpn(const char *s1, const char *s2){
 	int c1, c2;
 
     //Variables to store the numbers inside the strings
-    char n1s[32], n2s[32];
     int n1 = 0, n2 = 0;
 
-    int i1, i2, j, k;
+    int i1, i2;
     for(i1 = 0, i2 = 0; i1 < l1 && i2 < l2; i1++, i2++){
         if(isdigit(s1[i1]) && isdigit(s2[i2])){
 
 			//Getting the number inside s1.
-            for(j = i1; j < l1 && isdigit(s1[j]); j++){
-                n1s[j-i1] = s1[j];
-            }
-            n1s[j-i1] = '\0';
-            n1 = atoi(n1s);
+            n1 = __strcmpn_atoi(&s1[i1], &i1);
 
 			//Getting the number inside s2.
-            for(k=i2; k<l2 && isdigit(s2[k]); k++){
-                n2s[k-i2] = s2[k];
-            }
-            n2s[k-i2] = '\0';
-            n2 = atoi(n2s);
+            n2 = __strcmpn_atoi(&s2[i2], &i2);
 
             if(n1 != n2){
                 return n1 - n2;
 			}
-
-            i1=j-1;
-            i2=k-1;
         }else{
 			c1 = tolower(s1[i1]);
 			c2 = tolower(s2[i2]);

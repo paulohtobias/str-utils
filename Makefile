@@ -27,27 +27,30 @@ INCLUDE_PATHS = -I$(IDIR)
 
 #Libraries
 LIBS = 
-CFLAGS+= `pkg-config --cflags $(LIBS)`
-LIBRARIES = `pkg-config --libs $(LIBS)`
+#CFLAGS+= `pkg-config --cflags $(LIBS)`
+#LIBRARIES = `pkg-config --libs $(LIBS)`
 
 #Compilation line
 COMPILE = $(CC) $(CFLAGS) $(INCLUDE_PATHS)
 
 #FILEs
 #---------------Source----------------#
-SRCS = $(wildcard $(SDIR)/*$(SOURCE)) $(wildcard $(SDIR)/*/*$(SOURCE))
+SRCS = $(wildcard $(SDIR)/*$(SOURCE))
 
 #---------------Object----------------#
 OBJS = $(SRCS:$(SDIR)/%$(SOURCE)=$(ODIR)/%.o)
 #-------------Dependency--------------#
 DEPS = $(SRCS:$(SDIR)/%$(SOURCE)=$(ODIR)/%.d)
 
-all: $(OBJS)
+all: dll
+
+test: $(OBJS)
 	$(COMPILE) $(OBJS) main$(SOURCE) -o $(BIN) $(LIBRARIES)
 
 dll: LIBRARIES+= -lm -fPIC
+dll: LIB_NAME = lib
 dll: $(OBJS)
-	$(COMPILE) -shared -o libguisdl.so $(OBJS) $(LIBRARIES)
+	$(COMPILE) -shared -o $(LIB_NAME).so $(OBJS) $(LIBRARIES)
 
 # Include all .d files
 -include $(DEPS)
@@ -58,13 +61,3 @@ $(ODIR)/%.o: $(SDIR)/%$(SOURCE)
 .PHONY : clean
 clean :
 	-rm $(BIN) $(OBJS) $(DEPS)
-
-init:
-	mkdir include
-	mkdir src
-	mkdir obj
-	mkdir "obj/windows"
-	mkdir "obj/linux"
-
-run:
-	./$(BIN)

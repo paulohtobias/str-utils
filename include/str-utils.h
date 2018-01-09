@@ -41,4 +41,13 @@ char *str_replace(const char *orig, const char *rep, const char *with);
  */
 int strcmpn(const char *s1, const char *s2);
 
+/**
+ * Check if <code>str</code> ends with <code>suffix</code>.
+ * 
+ * @param str the string that will be checked
+ * @param suffix the suffix
+ * @return 1 if true and 0 if false
+ */
+int str_ends_with(const char *str, const char *suffix);
+
 #endif /* STR_UTILS_H */

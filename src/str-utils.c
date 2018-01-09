@@ -116,3 +116,22 @@ int strcmpn(const char *s1, const char *s2){
 		return 1;
     return 0;
 }
+
+int str_ends_with(const char *str, const char *suffix){
+	size_t len_str = strlen(str);
+	size_t len_suffix = strlen(suffix);
+	
+	if(len_str < len_suffix){
+		return 0;
+	}
+	
+	int i;
+	for(i = len_str - len_suffix; i < len_str; i++){
+		char c1 = str[i], c2 = suffix[i - (len_str - len_suffix)];
+		if(str[i] != suffix[i - (len_str - len_suffix)]){
+			return 0;
+		}
+	}
+	
+	return 1;
+}

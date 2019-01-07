@@ -2,7 +2,7 @@
 
 char *str_from_file(const char *file_name){
 	char *str = NULL;
-	FILE *in = fopen(file_name, "r");
+	FILE *in = fopen(file_name, "rb");
 	if(in == NULL){
 		return NULL;
 	}
@@ -15,21 +15,136 @@ char *str_from_file(const char *file_name){
 		return NULL;
 	}
 	fread(str, 1, size, in);
+	str[size - 1] = '\0';
 	fclose(in);
 
 	return str;
 }
 
 size_t str_copy(char **dest, const char *src) {
-	if (*dest != NULL) {
-		free(*dest);
+	free(*dest);
+	*dest = NULL;
+
+	if (src == NULL) {
+		return 0;
 	}
 
-	size_t src_len = strlen(src);
+	size_t src_len = strlen(src) + 1;
 	*dest = malloc(src_len);
 	strcpy(*dest, src);
 
 	return src_len;
+}
+
+size_t str_append(char **dest, const char *src) {
+	size_t dest_len = 0;
+
+	if (*dest != NULL) {
+		dest_len = strlen(*dest);
+	}
+
+	if (src == NULL) {
+		return dest_len;
+	}
+
+	size_t src_len = strlen(src);
+
+	*dest = realloc(*dest, dest_len + src_len + 1);
+
+	if (*dest == NULL) {
+		perror("realloc");
+		return 0;
+	}
+
+	size_t i;
+	i = 0;
+	while (1) {
+		if (((*dest)[i + dest_len] = src[i]) == '\0') {
+			break;
+		}
+		i++;
+	}
+
+	dest_len += src_len;
+
+	return dest_len + 1;
+}
+
+char *str_concat(const char *dest, const char *src) {
+	size_t dest_len = 0;
+	char *new = NULL;
+
+	if (dest != NULL) {
+		dest_len = strlen(dest);
+	} else {
+		str_copy(&new, src);
+		return new;
+	}
+
+	if (src == NULL) {
+		new = malloc(dest_len + 1);
+		strcpy(new, dest);
+
+		return new;
+	}
+
+	size_t src_len = strlen(src);
+
+	new = malloc(dest_len + src_len + 1);
+
+	size_t i, j;
+	i = j = 0;
+
+	strcpy(new, dest);
+	while (1) {
+		if ((new[i + dest_len] = src[i]) == '\0') {
+			break;
+		}
+		i++;
+	}
+
+	return new;
+}
+
+char *_str_join_list(const char *separator, void *list, size_t item_size, size_t list_len, char *(*to_str)(void *)) {
+	char *str = NULL;
+	char *item_str;
+	void *item;
+
+	size_t i;
+	for (i = 0; i < list_len - 1; i++) {
+		item = list + (i * item_size);
+		item_str = item;
+		if (to_str != NULL) {
+			item_str = to_str(item);
+		}
+
+		str_append(&str, item_str);
+		str_append(&str, separator);
+
+		free(item_str);
+	}
+	item = list + (i * item_size);
+	item_str = to_str(item);
+
+	str_append(&str, item_str);
+
+	free(item_str);
+
+	return str;
+}
+
+char *str_join(const char *separator, char **list, size_t list_len) {
+	char *str = NULL;
+
+	size_t i;
+	for (i = 0; i < list_len - 1; i++) {
+		str_append(&str, list[i]);
+		str_append(&str, separator);
+	}
+	str_append(&str, list[i]);
+
+	return str;
 }
 
 char *str_replace(const char *orig, const char *rep, const char *with){
@@ -76,6 +191,17 @@ char *str_replace(const char *orig, const char *rep, const char *with){
 	}
 	strcpy(tmp, orig);
 	return result;
+}
+
+char *str_replace_char(char *str, int rep, int with) {
+	size_t i;
+	for (i = 0; str[i] != '\0'; i++) {
+		if (str[i] == rep) {
+			str[i] = with;
+		}
+	}
+
+	return str;
 }
 
 int __strcmpn_atoi(const char *str, int *index){
@@ -145,4 +271,114 @@ int str_ends_with(const char *str, const char *suffix){
 	}
 
 	return 1;
+}
+
+int str_match_regex(const char *str, const char *regex_pattern, const regex_t *regex) {
+	regex_t _regex;
+
+	// Need to recompile the pattern.
+	int need_free = 0;
+	if (regex == NULL) {
+		need_free = 1;
+		if (regcomp(&_regex, regex_pattern, REG_EXTENDED | REG_NOSUB | REG_ICASE) != 0) {
+			return 0;
+		}
+	} else {
+		memcpy(&_regex, regex, sizeof _regex);
+	}
+
+	int match_result = regexec(&_regex, str, 0, NULL, 0) == 0;
+
+	if (need_free) {
+		regfree(&_regex);
+	}
+
+	return match_result;
+}
+
+int str_exec_regex(const char *str, const char *regex_pattern) {
+	return str_match_regex(str, regex_pattern, NULL);
+}
+
+
+char **str_to_argv(const char *_str, int *argc) {
+	*argc = 0;
+
+	// Removing leading whitespace.
+	for (; isspace(*_str); _str++);
+
+	// Cheking if the string is empty.
+	if (*_str == '\0') {
+		return NULL;
+	}
+
+	// Removing trailing whitespace.
+	char *str = NULL;
+	size_t str_len = str_copy(&str, _str) - 1;
+	for (; isspace(str[str_len - 1]); str_len--);
+
+
+	// We start with 1 argument and we call realloc whenever we find more.
+	// Maybe we could count the number of spaces as an initial approximation
+	// and do just one realloc at the end?
+	*argc = 1;
+	char **argv = calloc(*argc, sizeof(char *));
+
+	// Automaton states and transitions.
+	typedef int dfa_state_t;
+	typedef enum dfa_transition_t {
+		DT_SPACE = 0,
+		DT_QUOTES = 1,
+		DT_ALNUM = 2
+	} dfa_transition_t;
+
+	int dfa[3][3] = {
+		{0, 3, 1},
+		{0, 3, 1},
+		{3, 1, 3}
+	};
+	dfa_state_t state = 0;
+	dfa_transition_t symbol;
+
+	int temp;
+	int i, arg_len, argv_index = 0;
+	for (i = 0; i < str_len; i++) {
+		// Consuming leading whitespace.
+		while (isspace(str[i])) {
+			i++;
+		}
+
+		// Measuring the length of the argument.
+		arg_len = 0;
+		do {
+			if (isspace(str[i + arg_len]) || str[i + arg_len] == '\0') {
+				symbol = DT_SPACE;
+			} else if (str[i + arg_len] == '\"') {
+				symbol = DT_QUOTES;
+			} else{
+				symbol = DT_ALNUM;
+			}
+
+			state = dfa[state][symbol];
+			arg_len++;
+		} while (state != 0);
+
+		if (arg_len > 0) {
+			// Copying the argument
+			if (argv_index >= *argc) {
+				(*argc)++;
+				argv = realloc(argv, *argc * sizeof(char *));
+			}
+			argv[argv_index] = malloc(arg_len--);
+			temp = str[i + arg_len];
+			str[i + arg_len] = '\0';
+			strcpy(argv[argv_index], str + i);
+			argv_index++;
+			str[i + arg_len] = temp;
+		}
+
+		i += arg_len;
+	}
+
+	return argv;
 }

@@ -17,6 +17,10 @@ SDIR := ./src
 
 ifeq ($(OS),Windows_NT)
 	ODIR := ./obj/windows
+	#Libraries
+	LIBS := regex
+	CFLAGS += `pkg-config --cflags $(LIBS)`
+	LIBRARIES := `pkg-config --libs $(LIBS)`
 else
 	ODIR := ./obj/linux
 endif
@@ -26,11 +30,6 @@ SOURCE := .c
 
 #Paths
 INCLUDE_PATHS := -I$(IDIR)
-
-#Libraries
-LIBS := 
-#CFLAGS += `pkg-config --cflags $(LIBS)`
-#LIBRARIES := `pkg-config --libs $(LIBS)`
 
 #Compilation line
 COMPILE := $(CC) $(CFLAGS) $(INCLUDE_PATHS)

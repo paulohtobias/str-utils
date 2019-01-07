@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <regex.h>
 
 /**
  * Read all content from <code>file_name</code> into a string.
@@ -20,9 +21,30 @@
 char *str_from_file(const char *file_name);
 
 /**
+ * TODO: in copy, append and concat, size will be an in/out parameter
+ * in order to skip the strlen cals. Write the documentation!!
+ *
+ * copy and append will now return *dest;
+ *
+ * then, optmize str_join to use these changes.
+ */
+
+/**
  * Copy a string.
  */
 size_t str_copy(char **dest, const char *src);
+
+size_t str_append(char **dest, const char *src);
+
+char *str_concat(const char *dest, const char *src);
+
+#define str_join_list(separator, list, list_len, type, to_str) \
+	_str_join_list(separator, list, sizeof(type), list_len, (char *(*)(void *)) to_str)
+
+char *_str_join_list(const char *separator, void *list, size_t item_size, size_t list_len, char *(*to_str)(void *));
+
+char *str_join(const char *separator, char **list, size_t list_len);
+
 
 /**
  * Replace all ocurrences of <code>rep</code> in <code>orig</code> to
@@ -36,6 +58,9 @@ size_t str_copy(char **dest, const char *src);
  * @return a pointer to a new string with all the changes
  */
 char *str_replace(const char *orig, const char *rep, const char *with);
+
+char *str_replace_char(char *str, int rep, int with);
+
 
 /**
  * Compare 2 strings (case insensitive) and check for numbers in them.
@@ -51,6 +76,7 @@ char *str_replace(const char *orig, const char *rep, const char *with);
  */
 int strcmpn(const char *s1, const char *s2);
 
+
 /**
  * Check if <code>str</code> ends with <code>suffix</code>.
  *
@@ -59,5 +85,19 @@ int strcmpn(const char *s1, const char *s2);
  * @return 1 if true and 0 if false
  */
 int str_ends_with(const char *str, const char *suffix);
+
+int str_match_regex(const char *str, const char *regex_pattern, const regex_t *regex);
+
+int str_exec_regex(const char *str, const char *regex_pattern);
+
+
+/**
+ * Creates an argv-like array of strings by parsing str.
+ * The array size is stored into *argc.
+ *
+ * In case of an error, *argc will be set to 0 and the
+ * function will return NULL.
+ */
+char **str_to_argv(const char *str, int *argc);
 
 #endif /* STR_UTILS_H */

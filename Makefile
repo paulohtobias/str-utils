@@ -17,13 +17,14 @@ SDIR := ./src
 
 ifeq ($(OS),Windows_NT)
 	ODIR := ./obj/windows
-	#Libraries
-	LIBS := regex
-	CFLAGS += `pkg-config --cflags $(LIBS)`
-	LIBRARIES := `pkg-config --libs $(LIBS)`
 else
 	ODIR := ./obj/linux
 endif
+
+#Libraries
+LIBS := libpcre2-8
+CFLAGS += `pkg-config --cflags $(LIBS)`
+LIBRARIES := `pkg-config --libs $(LIBS)`
 
 #Files
 SOURCE := .c

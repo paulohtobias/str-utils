@@ -56,7 +56,6 @@ int main_cp_ct(int argc, char *argv[]) {
 }
 
 int main_regex(int argc, char *argv[]) {
-//int main(int argc, char *argv[]) {
 	if (argc < 3) {
 		fprintf(stderr, "falta argumentos\n");
 		return 1;
@@ -64,21 +63,6 @@ int main_regex(int argc, char *argv[]) {
 
 	char *string = argv[1];
 	char *regex_pattern = argv[2];
-
-	regex_t regex;
-
-	if (regcomp(&regex, regex_pattern, REG_EXTENDED | REG_ICASE) != 0) {
-		fprintf(stderr, "error compiling\n");
-		return 1;
-	}
-
-	printf("%d\n", str_match_regex(string, regex_pattern, NULL));
-
-	printf("%d\n", str_match_regex(string, regex_pattern, &regex));
-
-	printf("%d\n", str_match_regex(string, regex_pattern, &regex));
-
-	regfree(&regex);
 
 	/*regex_t regex;
 

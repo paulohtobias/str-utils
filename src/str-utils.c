@@ -273,29 +273,6 @@ int str_ends_with(const char *str, const char *suffix){
 	return 1;
 }
 
-int str_match_regex(const char *str, const char *regex_pattern, const regex_t *regex) {
-	regex_t _regex;
-
-	// Need to recompile the pattern.
-	int need_free = 0;
-	if (regex == NULL) {
-		need_free = 1;
-		if (regcomp(&_regex, regex_pattern, REG_EXTENDED | REG_NOSUB | REG_ICASE) != 0) {
-			return 0;
-		}
-	} else {
-		memcpy(&_regex, regex, sizeof _regex);
-	}
-
-	int match_result = regexec(&_regex, str, 0, NULL, 0) == 0;
-
-	if (need_free) {
-		regfree(&_regex);
-	}
-
-	return match_result;
-}
-
 int str_exec_regex(const char *str, const char *regex_pattern) {
 	// Handling NULL strings.
 	if (str == NULL || regex_pattern == NULL) {

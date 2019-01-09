@@ -12,7 +12,6 @@
 #include <ctype.h>
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
-#include <regex.h>
 
 /**
  * Read all content from <code>file_name</code> into a string.
@@ -87,8 +86,6 @@ int strcmpn(const char *s1, const char *s2);
  * @return 1 if true and 0 if false
  */
 int str_ends_with(const char *str, const char *suffix);
-
-int str_match_regex(const char *str, const char *regex_pattern, const regex_t *regex);
 
 int str_exec_regex(const char *str, const char *regex_pattern);
 

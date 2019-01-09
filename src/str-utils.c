@@ -283,22 +283,11 @@ int str_exec_regex(const char *str, const char *regex_pattern) {
 	pcre2_code *re;
 	PCRE2_SPTR pattern;     /* PCRE2_SPTR is a pointer to unsigned code units of */
 	PCRE2_SPTR subject;     /* the appropriate width (8, 16, or 32 bits). */
-	PCRE2_SPTR name_table;
 
-	int crlf_is_newline;
 	int errornumber;
-	int find_all;
-	int i;
-	int namecount;
-	int name_entry_size;
 	int rc;
-	int utf8;
-
-	uint32_t option_bits;
-	uint32_t newline;
 
 	PCRE2_SIZE erroroffset;
-	PCRE2_SIZE *ovector;
 
 	size_t subject_length;
 	pcre2_match_data *match_data;
@@ -359,36 +348,16 @@ int str_exec_regex(const char *str, const char *regex_pattern) {
 		NULL                  /* use default match context */
 	);
 
+	pcre2_match_data_free(match_data);   /* Release memory used for the match */
+	pcre2_code_free(re);                 /* data and the compiled pattern. */
+
 	/* Matching failed: handle error cases */
 
 	if (rc < 0) {
-		pcre2_match_data_free(match_data);   /* Release memory used for the match */
-		pcre2_code_free(re);                 /* data and the compiled pattern. */
 		return 1;
 	}
 
-	/* Match succeded. Get a pointer to the output vector, where string offsets are
-	stored. */
-
-	ovector = pcre2_get_ovector_pointer(match_data);
-	//printf("\nMatch succeeded at offset %d\n", (int)ovector[0]);
-
-
-	/*************************************************************************
-	* We have found the first match within the subject string. If the output *
-	* vector wasn't big enough, say so. Then output any substrings that were *
-	* captured.                                                              *
-	*************************************************************************/
-
-	/* Show substrings stored in the output vector by number. Obviously, in a real
-	application you might want to do things other than print them. */
-
-	for (i = 0; i < rc; i++) {
-		break;
-		PCRE2_SPTR substring_start = subject + ovector[2*i];
-		size_t substring_length = ovector[2*i+1] - ovector[2*i];
-		printf("%2d: %.*s\n", i, (int)substring_length, (char *)substring_start);
-	}
+	/* Match succeded. */
 
 	return 0;
 }
@@ -426,15 +395,15 @@ char **str_to_argv(const char *_str, int *argc) {
 	} dfa_transition_t;
 
 	int dfa[3][3] = {
-		{0, 3, 1},
-		{0, 3, 1},
-		{3, 1, 3}
+		{0, 2, 1},
+		{0, 2, 1},
+		{2, 1, 2}
 	};
 	dfa_state_t state = 0;
 	dfa_transition_t symbol;
 
 	int temp;
-	int i, arg_len, argv_index = 0;
+	int i, j, arg_start, arg_len, argv_index = 0;
 	for (i = 0; i < str_len; i++) {
 		// Consuming leading whitespace.
 		while (isspace(str[i])) {
@@ -442,18 +411,25 @@ char **str_to_argv(const char *_str, int *argc) {
 		}
 
 		// Measuring the length of the argument.
-		arg_len = 0;
+		arg_start = i;
+		arg_len = j = 0;
 		do {
-			if (isspace(str[i + arg_len]) || str[i + arg_len] == '\0') {
-				symbol = DT_SPACE;
-			} else if (str[i + arg_len] == '\"') {
+			if (str[i + j] == '\"') {
 				symbol = DT_QUOTES;
-			} else{
-				symbol = DT_ALNUM;
+				if (arg_start == i) {
+					arg_start++;
+				}
+			} else {
+				arg_len++;
+				if (isspace(str[i + j]) || str[i + j] == '\0') {
+					symbol = DT_SPACE;
+				} else {
+					symbol = DT_ALNUM;
+				}
 			}
 
 			state = dfa[state][symbol];
-			arg_len++;
+			j++;
 		} while (state != 0);
 
 		if (arg_len > 0) {
@@ -463,14 +439,17 @@ char **str_to_argv(const char *_str, int *argc) {
 				argv = realloc(argv, *argc * sizeof(char *));
 			}
 			argv[argv_index] = malloc(arg_len--);
-			temp = str[i + arg_len];
-			str[i + arg_len] = '\0';
-			strcpy(argv[argv_index], str + i);
+			temp = str[arg_start + arg_len];
+			str[arg_start + arg_len] = '\0';
+			strcpy(argv[argv_index], str + arg_start);
 			argv_index++;
-			str[i + arg_len] = temp;
+			str[arg_start + arg_len] = temp;
 		}
 
-		i += arg_len;
+		if (arg_start != i) {
+			arg_start++;
+		}
+		i = arg_start + arg_len;
 	}
 
 	return argv;

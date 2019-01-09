@@ -4,20 +4,25 @@
 
 //int main_argv(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
-	char *str = str_join(" ", argv, argc);
+	/*char *str = str_join(" ", argv, argc);
 
 	for (int i = 0; i < argc; i++) {
 		printf("%d: '%s'\n", i, argv[i]);
-	}
+	}*/
+
+	char str[2048];
+	printf("search: ");
+	fscanf(stdin, "%[^\n]", str);
 
 	int c;
 	char **a = str_to_argv(str, &c);
 	if (a != NULL) {
 		for (int i = 0; i < c; i++) {
 			printf("%d: '%s'\n", i, a[i]);
+			free(a[i]);
 		}
+		free(a);
 	}
-	free(str);
 	return 0;
 }
 

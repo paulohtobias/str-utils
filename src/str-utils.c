@@ -276,7 +276,7 @@ int str_ends_with(const char *str, const char *suffix){
 int str_exec_regex(const char *str, const char *regex_pattern) {
 	// Handling NULL strings.
 	if (str == NULL || regex_pattern == NULL) {
-		return 1;
+		return 0;
 	}
 
 	// Code adapted from https://github.com/luvit/pcre2/blob/a677f5b51bac251082856d35a48a01670e2fd4a7/src/pcre2demo.c#L61
@@ -322,7 +322,7 @@ int str_exec_regex(const char *str, const char *regex_pattern) {
 		pcre2_get_error_message(errornumber, buffer, sizeof(buffer));
 		printf("PCRE2 compilation failed at offset %d: %s\n", (int)erroroffset,
 			buffer);
-		return 2;
+		return 0;
 	}
 
 
@@ -354,12 +354,12 @@ int str_exec_regex(const char *str, const char *regex_pattern) {
 	/* Matching failed: handle error cases */
 
 	if (rc < 0) {
-		return 1;
+		return 0;
 	}
 
 	/* Match succeded. */
 
-	return 0;
+	return 1;
 }
 
 

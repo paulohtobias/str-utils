@@ -44,7 +44,7 @@ char *str_concat(const char *dest, const char *src);
 
 char *_str_join_list(const char *separator, void *list, size_t item_size, size_t list_len, char *(*to_str)(void *));
 
-char *str_join(const char *separator, char **list, size_t list_len);
+char *str_join(const char *separator, const char **list, size_t list_len);
 
 
 /**

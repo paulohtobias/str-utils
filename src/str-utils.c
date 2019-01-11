@@ -134,7 +134,7 @@ char *_str_join_list(const char *separator, void *list, size_t item_size, size_t
 	return str;
 }
 
-char *str_join(const char *separator, char **list, size_t list_len) {
+char *str_join(const char *separator, const char **list, size_t list_len) {
 	char *str = NULL;
 
 	size_t i;

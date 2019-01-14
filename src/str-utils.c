@@ -106,6 +106,12 @@ char *str_concat(const char *dest, const char *src) {
 	return new;
 }
 
+
+int str_qsort_ccmp(const void *s1, const void *s2) {
+	return strcasecmp(*(const char **) s1, *(const char **) s2);
+}
+
+
 char *_str_join_list(const char *separator, void *list, size_t item_size, size_t list_len, char *(*to_str)(void *)) {
 	char *str = NULL;
 	char *item_str;

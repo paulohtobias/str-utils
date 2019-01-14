@@ -39,6 +39,10 @@ size_t str_append(char **dest, const char *src);
 
 char *str_concat(const char *dest, const char *src);
 
+
+int str_qsort_ccmp(const void *s1, const void *s2);
+
+
 #define str_join_list(separator, list, list_len, type, to_str) \
 	_str_join_list(separator, list, sizeof(type), list_len, (char *(*)(void *)) to_str)
 

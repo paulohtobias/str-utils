@@ -22,15 +22,14 @@ char *str_from_file(const char *file_name){
 }
 
 size_t str_copy(char **dest, const char *src) {
-	free(*dest);
-	*dest = NULL;
-
 	if (src == NULL) {
+		free(*dest);
+		*dest = NULL;
 		return 0;
 	}
 
 	size_t src_len = strlen(src) + 1;
-	*dest = malloc(src_len);
+	*dest = realloc(*dest, src_len);
 	strcpy(*dest, src);
 
 	return src_len;
@@ -108,6 +107,23 @@ char *str_concat(const char *dest, const char *src) {
 
 
 int str_qsort_ccmp(const void *s1, const void *s2) {
+	return strcasecmp(*(const char **) s1, *(const char **) s2);
+}
+
+int str_qsort_ccmp_null(const void *s1, const void *s2) {
+	// We check if one of them is NULL and make sure that it will be
+	// considered smaller.
+	if (*(const char **) s1 == NULL) {
+		if (*(const char **) s2 == NULL) {
+			return 0;
+		} else {
+			return -1;
+		}
+	} else if (*(const char **) s2 == NULL) {
+		return 1;
+	}
+
+	// If neither are NULL we can compare them normaly.
 	return strcasecmp(*(const char **) s1, *(const char **) s2);
 }
 
@@ -259,6 +275,14 @@ int strcmpn(const char *s1, const char *s2){
 	else if( (i1 < l1) && (i2 == l2) )
 		return 1;
 	return 0;
+}
+
+int str_starts_with(const char *str, const char *preffix) {
+	size_t i;
+
+	for (i = 0; str[i] != '\0' && preffix[i] != '\0' && str[i] == preffix[i]; i++);
+
+	return preffix[i] == '\0';
 }
 
 int str_ends_with(const char *str, const char *suffix){

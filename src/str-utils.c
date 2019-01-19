@@ -107,6 +107,7 @@ char *str_concat(const char *dest, const char *src) {
 
 
 int str_qsort_ccmp(const void *s1, const void *s2) {
+	// TODO: return strccmpn(*(const char **) s1, *(const char **) s2);
 	return strcasecmp(*(const char **) s1, *(const char **) s2);
 }
 
@@ -124,6 +125,7 @@ int str_qsort_ccmp_null(const void *s1, const void *s2) {
 	}
 
 	// If neither are NULL we can compare them normaly.
+	// TODO: return strccmpn(*(const char **) s1, *(const char **) s2);
 	return strcasecmp(*(const char **) s1, *(const char **) s2);
 }
 
@@ -484,3 +486,22 @@ char **str_to_argv(const char *_str, int *argc) {
 
 	return argv;
 }
+
+
+#if (defined(_WIN32) || defined(_WIN64))
+char *str_utf16_to_utf8(const wchar_t *utf16_str, int size) {
+	int utf8_str_len = WideCharToMultiByte(CP_UTF8, P_STR_UTF_FLAGS, utf16_str, size, NULL, 0, NULL, NULL);
+	char *utf8_str = malloc(utf8_str_len);
+	WideCharToMultiByte(CP_UTF8, P_STR_UTF_FLAGS, utf16_str, size, utf8_str, utf8_str_len, NULL, NULL);
+
+	return utf8_str;
+}
+
+wchar_t *str_utf8_to_utf16(const char *utf8_str, int size) {
+	int utf16_str_len = MultiByteToWideChar(CP_UTF8, P_STR_UTF_FLAGS, utf8_str, -1, NULL, 0);
+	wchar_t *utf16_str = malloc(utf16_str_len * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, P_STR_UTF_FLAGS, utf8_str, -1, utf16_str, utf16_str_len);
+
+	return utf16_str;
+}
+#endif // _WIN32 || _WIN64

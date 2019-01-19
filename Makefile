@@ -6,6 +6,7 @@ CFLAGS := -g -Wall -MMD
 ifeq ($(OS),Windows_NT)
     BIN := main.exe
 	DLE := dll
+	LIBRARIES = -municode
 else
     BIN := main.out
 	DLE := so
@@ -24,7 +25,7 @@ endif
 #Libraries
 LIBS := libpcre2-8
 CFLAGS += `pkg-config --cflags $(LIBS)`
-LIBRARIES := `pkg-config --libs $(LIBS)`
+LIBRARIES += `pkg-config --libs $(LIBS)`
 
 #Files
 SOURCE := .c

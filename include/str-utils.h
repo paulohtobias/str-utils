@@ -10,6 +10,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+ #ifndef UNICODE
+  #define UNICODE
+  #define _UNICODE
+ #else
+  #ifndef _UNICODE
+   #define _UNICODE
+  #endif
+ #endif
+#endif // _WIN32 || _WIN64
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
@@ -105,5 +116,13 @@ int str_exec_regex(const char *str, const char *regex_pattern);
  * function will return NULL.
  */
 char **str_to_argv(const char *str, int *argc);
+
+#if (defined(_WIN32) || defined(_WIN64))
+#define P_STR_UTF_FLAGS 0
+/// UTF-8 <=> UTF-16 conversion for WinAPI compatibility.
+char *str_utf16_to_utf8(const wchar_t *utf16_str, int size);
+wchar_t *str_utf8_to_utf16(const char *utf8_str, int size);
+#endif // _WIN32 || _WIN64
+
 
 #endif /* STR_UTILS_H */

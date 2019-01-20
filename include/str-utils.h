@@ -56,12 +56,15 @@ int str_qsort_ccmp(const void *s1, const void *s2);
 int str_qsort_ccmp_null(const void *s1, const void *s2);
 
 
+#define str_join_list_custom_free(separator, list, list_len, type, to_str, free_function) \
+	_str_join_list(separator, list, sizeof(type), list_len, (char *(*)(const void *)) to_str, free_function)
+
 #define str_join_list(separator, list, list_len, type, to_str) \
-	_str_join_list(separator, list, sizeof(type), list_len, (char *(*)(void *)) to_str)
+	_str_join_list(separator, list, sizeof(type), list_len, (char *(*)(const void *)) to_str, free)
 
-char *_str_join_list(const char *separator, void *list, size_t item_size, size_t list_len, char *(*to_str)(void *));
+char *_str_join_list(const char *separator, const void *list, size_t item_size, size_t list_len, char *(*to_str)(const void *), void (*free_function)(void *));
 
-char *str_join(const char *separator, const char **list, size_t list_len);
+char *str_join(const char *separator, char * const *list, size_t list_len);
 
 
 /**

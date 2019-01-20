@@ -130,35 +130,40 @@ int str_qsort_ccmp_null(const void *s1, const void *s2) {
 }
 
 
-char *_str_join_list(const char *separator, void *list, size_t item_size, size_t list_len, char *(*to_str)(void *)) {
+char *_str_join_list(const char *separator, const void *list, size_t item_size, size_t list_len, char *(*to_str)(const void *), void (*free_function)(void *)) {
 	char *str = NULL;
 	char *item_str;
-	void *item;
+	const void *item;
 
 	size_t i;
 	for (i = 0; i < list_len - 1; i++) {
 		item = list + (i * item_size);
-		item_str = item;
-		if (to_str != NULL) {
-			item_str = to_str(item);
-		}
+		item_str = to_str(item);
 
 		str_append(&str, item_str);
 		str_append(&str, separator);
 
-		free(item_str);
+		if (free_function != NULL) {
+			free_function(item_str);
+		} else {
+			free(item_str);
+		}
 	}
 	item = list + (i * item_size);
 	item_str = to_str(item);
 
 	str_append(&str, item_str);
 
-	free(item_str);
+	if (free_function != NULL) {
+		free_function(item_str);
+	} else {
+		free(item_str);
+	}
 
 	return str;
 }
 
-char *str_join(const char *separator, const char **list, size_t list_len) {
+char *str_join(const char *separator, char * const *list, size_t list_len) {
 	char *str = NULL;
 
 	size_t i;
